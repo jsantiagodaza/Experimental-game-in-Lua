@@ -12,14 +12,14 @@
 - [ ] README
 
 ## FASE 1 — Prototipo técnico
-- [ ] módulo Player
-- [ ] movimiento
-- [ ] colisión
-- [ ] mapa de prueba
-- [ ] cámara
-- [ ] input centralizado
+- [x] módulo Player
+- [x] movimiento
+- [x] colisión
+- [x] mapa de prueba
+- [x] cámara
+- [x] input centralizado
 - [ ] transición básica
-**Salida:** caminar por una habitación y chocar con obstáculos.
+**Salida:** caminar por una habitación y chocar con obstáculos. ✅ Cumplida (falta transición entre salas para cerrar la fase por completo).
 
 ## FASE 2 — Interacción
 - [ ] sistema de interacción
