@@ -11,6 +11,9 @@
 local Player = require("src.entities.player")
 local Camera = require("src.core.camera")
 local Collision = require("src.systems.collision")
+local Transition = require("src.core.transition")
+local Input = require("src.core.input")
+local Dialogue = require("src.systems.dialogue")
 
 local Game = {}
 
@@ -18,6 +21,7 @@ local room
 local roomId
 local player
 local camera
+local activeInteractable = nil
 
 -- Carga una sala por su id (nombre de archivo en data/rooms/, sin extensión).
 -- `spawn` es opcional: si no se da, se usa room.playerStart de esa sala.
@@ -40,11 +44,8 @@ function Game.load()
 end
 
 -- Revisa si el jugador está pisando alguna puerta de la sala actual
--- y, si es así, cambia de sala. Esto es la "transición básica" pedida
--- en FASE 1. El sistema formal de triggers/interacción (con más tipos
--- de eventos) es tarea de FASE 2; esto se limita a puertas.
 local function checkDoors()
-    if not room.doors then
+    if not room.doors or Transition.isActive() then
         return
     end
 
@@ -52,33 +53,87 @@ local function checkDoors()
 
     for _, door in ipairs(room.doors) do
         if Collision.checkAABB(playerRect, door) then
-            loadRoom(door.targetRoom, door.targetSpawn)
-            return -- una sola transición por frame
+            Transition.start(door.targetRoom, door.targetSpawn, loadRoom)
+            return
+        end
+    end
+end
+
+-- Revisa si el jugador está cerca de un objeto interactuable
+local function checkInteractables()
+    activeInteractable = nil
+    if not room.interactables then return end
+
+    -- Ampliamos el rectángulo del jugador para detectar cercanía
+    local pRect = player:getRect()
+    local reach = {
+        x = pRect.x - 20,
+        y = pRect.y - 20,
+        w = pRect.w + 40,
+        h = pRect.h + 40
+    }
+
+    for _, obj in ipairs(room.interactables) do
+        if Collision.checkAABB(reach, obj) then
+            activeInteractable = obj
+            
+            -- Si está cerca y presiona E, activamos el diálogo
+            if Input.isJustPressed("interact") then
+                Dialogue.show(obj.text)
+            end
+            break -- Solo interactúa con el más cercano en la lista
         end
     end
 end
 
 function Game.update(dt)
-    player:update(dt, room.walls)
-    checkDoors()
+    Input.update()
+
+    if Dialogue.isActive() then
+        Dialogue.update(dt)
+        return -- Congela el juego (el jugador no se mueve) mientras haya texto
+    end
+
+    -- Congelamos el mundo mientras haya transición
+    if not Transition.isActive() then
+        player:update(dt, room.walls)
+        checkDoors()
+        checkInteractables()
+    end
+    
+    Transition.update(dt)
     camera:follow(player.x + player.width / 2, player.y + player.height / 2)
 end
 
 function Game.draw()
     camera:attach()
 
-    -- Fondo de la sala (placeholder mientras no haya tileset).
+    -- Fondo de la sala
     love.graphics.setColor(0.12, 0.12, 0.15)
     love.graphics.rectangle("fill", 0, 0, room.width, room.height)
 
-    -- Paredes de prueba.
+    -- Objetos interactuables (Cajas verdes)
+    if room.interactables then
+        for _, obj in ipairs(room.interactables) do
+            love.graphics.setColor(0.2, 0.8, 0.2)
+            love.graphics.rectangle("fill", obj.x, obj.y, obj.w, obj.h)
+            
+            -- Símbolo de "!" arriba del objeto si estamos cerca
+            if obj == activeInteractable then
+                love.graphics.setColor(1, 1, 1)
+                -- Placeholder de texto simple por ahora
+                love.graphics.print("!", obj.x + obj.w / 2 - 4, obj.y - 20)
+            end
+        end
+    end
+
+    -- Paredes de prueba
     love.graphics.setColor(0.35, 0.35, 0.4)
     for _, wall in ipairs(room.walls) do
         love.graphics.rectangle("fill", wall.x, wall.y, wall.w, wall.h)
     end
 
-    -- Puertas (placeholder visual: un tono distinto para que se puedan ver
-    -- durante el prototipo; no existirá cuando haya tileset/arte real).
+    -- Puertas (amarillas)
     if room.doors then
         love.graphics.setColor(0.6, 0.5, 0.2)
         for _, door in ipairs(room.doors) do
@@ -89,6 +144,10 @@ function Game.draw()
     player:draw()
 
     camera:detach()
+
+    -- Efectos visuales de interfaz sobre toda la pantalla
+    Transition.draw()
+    Dialogue.draw()
 end
 
 return Game

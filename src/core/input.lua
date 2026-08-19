@@ -20,20 +20,31 @@ local bindings = {
     pause      = { "p" },
 }
 
--- Devuelve true si alguna tecla asociada a la acción está presionada ahora mismo.
-function Input.isDown(action)
-    local keys = bindings[action]
-    if not keys then
-        return false
-    end
+local previousState = {}
+local currentState = {}
 
-    for _, key in ipairs(keys) do
-        if love.keyboard.isDown(key) then
-            return true
+-- Debe llamarse al inicio de cada frame para actualizar el estado de las teclas
+function Input.update()
+    for action, keys in pairs(bindings) do
+        previousState[action] = currentState[action] or false
+        currentState[action] = false
+        for _, key in ipairs(keys) do
+            if love.keyboard.isDown(key) then
+                currentState[action] = true
+                break
+            end
         end
     end
+end
 
-    return false
+-- Devuelve true si la tecla está presionada en este momento
+function Input.isDown(action)
+    return currentState[action] or false
+end
+
+-- Devuelve true SOLO en el frame en el que se presionó la tecla
+function Input.isJustPressed(action)
+    return (currentState[action] == true) and (previousState[action] == false)
 end
 
 return Input

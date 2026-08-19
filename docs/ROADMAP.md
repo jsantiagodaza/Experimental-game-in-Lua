@@ -18,12 +18,12 @@
 - [x] mapa de prueba
 - [x] cámara
 - [x] input centralizado
-- [ ] transición básica
-**Salida:** caminar por una habitación y chocar con obstáculos. ✅ Cumplida (falta transición entre salas para cerrar la fase por completo).
+- [x] transición básica
+**Salida:** caminar por una habitación y chocar con obstáculos. ✅ Cumplida (Fase 1 completada con transición suave de mosaico).
 
 ## FASE 2 — Interacción
-- [ ] sistema de interacción
-- [ ] objetos examinables
+- [x] sistema de interacción
+- [x] objetos examinables
 - [ ] puertas
 - [ ] interruptores
 - [ ] NPC

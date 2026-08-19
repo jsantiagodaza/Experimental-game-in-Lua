@@ -11,18 +11,28 @@
 -- sala puede migrarse a esa representación sin romper el resto del código.
 
 return {
-    width = 800,
-    height = 600,
+    width = 1280,
+    height = 720,
 
-    playerStart = { x = 384, y = 284 },
+    playerStart = { x = 450, y = 300 },
 
     -- Paredes que delimitan la habitación + un obstáculo central de prueba.
     walls = {
-        { x = 0,   y = 0,   w = 800, h = 16 },  -- pared superior
-        { x = 0,   y = 584, w = 800, h = 16 },  -- pared inferior
-        { x = 0,   y = 0,   w = 16,  h = 600 }, -- pared izquierda
-        { x = 784, y = 0,   w = 16,  h = 600 }, -- pared derecha
+        { x = 0,    y = 0,   w = 1280, h = 16 },  -- pared superior
+        { x = 0,    y = 704, w = 1280, h = 16 },  -- pared inferior
+        { x = 0,    y = 0,   w = 16,   h = 720 }, -- pared izquierda
+        { x = 1264, y = 0,   w = 16,   h = 720 }, -- pared derecha
 
-        { x = 300, y = 250, w = 100, h = 100 }, -- obstáculo de prueba
+        { x = 300,  y = 250, w = 100,  h = 100 }, -- obstáculo de prueba
+    },
+
+    -- Puertas de transición
+    doors = {
+        { x = 1200, y = 300, w = 64, h = 120, targetRoom = "room_test_2", targetSpawn = { x = 120, y = 328 } }
+    },
+
+    -- Objetos con los que el jugador puede interactuar
+    interactables = {
+        { x = 500, y = 300, w = 40, h = 40, text = "Esto es una caja..." }
     },
 }
